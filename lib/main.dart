@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import "package:flutter/material.dart";
 import "package:http/http.dart" as http;
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 main() {
 	SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
@@ -28,10 +29,10 @@ class Channel {
 }
 
 class PageSt extends State {
-  var ts=Channel("UCq-Fj5jknLsUf-MWSy4_brA", "T-Series", Image.asset("img/ts.png"),Colors.red[900]),
+  var ts=Channel("UCq-Fj5jknLsUf-MWSy4_brA", "T-Series", Image.asset("img/ts.png"), Colors.red[900]),
 			pdp=Channel("UC-lHJZR3Gqxm24_Vd_AJ5Yw", "PewDiePie", Image.asset("img/pdp.png"), Colors.blue[900]);
 	var timer, loading=true;
-	var bR=BorderRadius.circular(15), allSides=EdgeInsets.all(15);
+	var bR=BorderRadius.circular(15);
 
 	PageSt() {
 		Timer.periodic(Duration(seconds: 3), (t) async {
@@ -51,7 +52,6 @@ class PageSt extends State {
 		});
 	}
 
-	// logic
 	getSubs(id) async {
 		var res, url="https://www.googleapis.com/youtube/v3/channels?id=$id&part=statistics&key=AIzaSyDvd7sKFtV7evDIlkFmTCrWUIsCEWu1aJY";
 
@@ -72,31 +72,31 @@ class PageSt extends State {
 	Widget channelUI(c) {
 		var rounded = (w) => ClipRRect(child: w, borderRadius: bR);
 
+    var icon = Container(
+      margin: EdgeInsets.symmetric(vertical: 12), height: 135, 
+      child: rounded(c.img)
+    );
+    var subTxt = Expanded(child: Counter(v: c.subs, sfx: " subscribers"));
+    var expanded = Column(children: [
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        child: Text(c.desc, style: TextStyle(color: white, fontSize: 18))
+      ),
+      GestureDetector(
+        child: Image.asset("img/yt.png", height: 64),
+        onTap: () { launch("https://www.youtube.com/channel/${c.id}"); }
+      )],
+    );
+
 		return Container(
-      margin: EdgeInsets.symmetric(horizontal: 10),
-      padding: EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: 10, left: 10, right: 10),
       child: Card(
-        color: c.color,
-        elevation: 5,
-        shape: RoundedRectangleBorder(borderRadius: bR),
+        color: c.color, shape: RoundedRectangleBorder(borderRadius: bR),
         child: rounded(ExpansionTile(
-					title: Row(
-						children: [
-							Container(
-								margin: EdgeInsets.symmetric(vertical: 12), height: 135,
-								child: rounded(c.img)
-							),
-							Expanded(
-								child: Container(padding: allSides, child: Counter(v: c.subs, sfx: ' subscribers'))
-							)
-						]
-					),
-					children: [Container(
-						margin: EdgeInsets.only(bottom: 16, left: 16, right: 16),
-						child: Text(c.desc, style: TextStyle(color: white, fontSize: 18))
-					)],
-					trailing: Container(width: 0),
-				))
+          title: Row(children: [icon, subTxt]),
+          children: [expanded],
+          trailing: Container(width: 0)
+        )),
       )
     );
 	}
@@ -111,7 +111,7 @@ class PageSt extends State {
 		if (!internet) {
 			widgets=[];
 			cardsH=0;
-			icon=Icon(Icons.warning, color: white);
+			icon=Icon(Icons.error, color: white, size: 30);
 			msg="Can't access Internet";
 		}
 
@@ -127,7 +127,7 @@ class PageSt extends State {
 			alignment: Alignment.center,
 			child: Wrap(children: [
 				icon,
-				msg!=null ? messageText("   $msg") : Counter(v: d.abs(), pfx: (d>0 ? ts.name : pdp.name) + " is ahead by ", sfx: " subscribers")
+				msg!=null ? messageText("  $msg") : Counter(v: d.abs(), pfx: (d>0 ? ts.name : pdp.name) + " is ahead by ", sfx: " subscribers")
 			])
 		));
 
@@ -135,11 +135,6 @@ class PageSt extends State {
 			backgroundColor: bgColor,
 			body: SingleChildScrollView(child: Column(children: widgets))
 		);
-	}
-
-	dispose() {
-		timer.cancel();
-		super.dispose();
 	}
 }
 
@@ -151,14 +146,15 @@ class Counter extends StatefulWidget {
 
 class CounterSt extends State<Counter> {
 	var cnt, fv, tmr, nf=NumberFormat.simpleCurrency(decimalDigits: 0, name: 'JPY', locale: 'en_US');
-	CounterSt(v) { fv = cnt = v; }
+
+	CounterSt(v) {fv=cnt=v;}
 
 	didUpdateWidget(ow) {
 		if (tmr!=null) {
 			tmr.cancel();
-			setState(() {cnt = fv;});
+			setState(() {cnt=fv;});
 		}
-		fv = ow!= null? ow.v : widget.v;
+		fv = ow!=null ? ow.v : widget.v;
 		tmr = Timer.periodic(Duration(milliseconds: 100), updateCnt);
 		super.didUpdateWidget(ow);
 	}
@@ -166,13 +162,12 @@ class CounterSt extends State<Counter> {
 	updateCnt(timer) {
 		var nv=0, d=fv-cnt;
 		if (d==0) {
-			timer.cancel();
-			return;
+			return timer.cancel();
 		}
 		else {
 			nv=d<0 ? cnt-1 : cnt+1;
 		}
-		setState(() { cnt=nv; });
+		setState(() {cnt=nv;});
 	}
 
 	build(c) => messageText((widget.pfx ?? '') + nf.format(cnt).substring(1) + (widget.sfx ?? ''));
