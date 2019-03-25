@@ -4,13 +4,9 @@ This app shows live Youtube subscriber count for PewDiePie and T-Series which ar
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+This app works on android devices but die to lack of MacOS machine I could not test it on iOS device.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.io/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.io/docs/cookbook)
-
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.io/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+List of sources of images that I have used in this app
+ - /img/ts.png - Created myself
+ - /img/pdp.png - https://purepng.com/photo/30584/logos-pewdiepie-logo (Free for non-commercial use)
+ - /img/yt.png - https://www.youtube.com/yt/about/media/downloads/youtube_monochrome_dark_icon.zip (social -> 128px -> red -> youtube_social_squircle_red.png)

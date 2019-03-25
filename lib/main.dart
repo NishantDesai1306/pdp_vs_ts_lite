@@ -79,12 +79,15 @@ class PageSt extends State {
     var subTxt = Expanded(child: Counter(v: c.subs, sfx: " subscribers"));
     var expanded = Column(children: [
       Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16),
+        padding: EdgeInsets.only(left: 16, right: 16, bottom: 10),
         child: Text(c.desc, style: TextStyle(color: white, fontSize: 18))
       ),
-      GestureDetector(
-        child: Image.asset("img/yt.png", height: 64),
-        onTap: () { launch("https://www.youtube.com/channel/${c.id}"); }
+      Padding(
+        padding: EdgeInsets.only(bottom: 10),
+        child: GestureDetector(
+          child: Image.asset("img/yt.png", height: 45),
+          onTap: () { launch("https://www.youtube.com/channel/${c.id}"); }
+        ),
       )],
     );
 
