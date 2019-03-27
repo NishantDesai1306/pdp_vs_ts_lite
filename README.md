@@ -4,7 +4,7 @@ This app shows live Youtube subscriber count for PewDiePie and T-Series which ar
 
 ## Getting Started
 
-This app works on android devices but die to lack of MacOS machine I could not test it on iOS device.
+This app works on android and ios devices.
 
 List of sources of images that I have used in this app
  - /img/ts.png - Created myself
