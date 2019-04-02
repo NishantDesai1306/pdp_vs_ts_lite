@@ -8,5 +8,5 @@ This app works on android and ios devices.
 
 List of sources of images that I have used in this app
  - /img/ts.png - Created myself
- - /img/pdp.png - https://purepng.com/photo/30584/logos-pewdiepie-logo (Free for non-commercial use)
+ - /img/pdp.png - https://purepng.com/photo/30584/logos-pewdiepie-logo
  - /img/yt.png - https://www.youtube.com/yt/about/media/downloads/youtube_monochrome_dark_icon.zip (social -> 128px -> red -> youtube_social_squircle_red.png)
