@@ -12,41 +12,50 @@ main() {
 }
 
 class App extends StatelessWidget {
-	build(c) => MaterialApp(home: Page());
+	build(c) => MaterialApp(
+		home: Page(), 
+		theme: ThemeData(accentColor: Colors.white, dividerColor: Colors.transparent, brightness: Brightness.dark)
+	);
 }
 
 class Page extends StatefulWidget {
 	createState() => PageSt();
 }
 
-var white=Colors.white;
-var style=TextStyle(color: white, fontSize: 25, fontWeight: FontWeight.bold);
-messageText(txt) => Text(txt, style: style, textAlign: TextAlign.center);
+messageText(txt) => Text(
+	txt,
+	style: TextStyle(
+		fontSize: 25,
+		fontWeight: FontWeight.bold
+	),
+	textAlign: TextAlign.center
+);
 
 class Channel {
-  var id, name, subs=-1, img, desc='', color;
-  Channel(this.id, this.name, this.img, this.color);
+	var id, name, subs=-1, img, desc='', color;
+	Channel(this.id, this.name, this.img, this.color);
 }
 
 class PageSt extends State {
-  var ts=Channel("UCq-Fj5jknLsUf-MWSy4_brA", "T-Series", Image.asset("img/ts.png"), Colors.red[900]),
+	var ts=Channel("UCq-Fj5jknLsUf-MWSy4_brA", "T-Series", Image.asset("img/ts.png"), Colors.red[900]),
 			pdp=Channel("UC-lHJZR3Gqxm24_Vd_AJ5Yw", "PewDiePie", Image.asset("img/pdp.png"), Colors.blue[900]);
 	var timer, loading=true;
 	var bR=BorderRadius.circular(15);
+	var UPDATE_RATE = 3;
 
 	PageSt() {
-		Timer.periodic(Duration(seconds: 3), (t) async {
+		Timer.periodic(Duration(seconds: UPDATE_RATE), (t) async {
 			timer=t;
 			var newTSubs=await getSubs(ts.id), newPSubs=await getSubs(pdp.id);
 
-      if (loading) {
-        ts.desc = await rootBundle.loadString('txt/ts.txt');
-        pdp.desc = await rootBundle.loadString('txt/pdp.txt');
-      }
+			if (loading) {
+				ts.desc = await rootBundle.loadString('txt/ts.txt');
+				pdp.desc = await rootBundle.loadString('txt/pdp.txt');
+			}
 
 			setState(() {
 				ts.subs=newTSubs;
-        pdp.subs=newPSubs;
+				pdp.subs=newPSubs;
 				loading=false;
 			});
 		});
@@ -72,40 +81,45 @@ class PageSt extends State {
 	Widget channelUI(c) {
 		var rounded = (w) => ClipRRect(child: w, borderRadius: bR);
 
-    var icon = Container(
-      margin: EdgeInsets.symmetric(vertical: 12), height: 135, 
-      child: rounded(c.img)
-    );
-    var subTxt = Expanded(child: Counter(v: c.subs, sfx: " subscribers"));
-    var expanded = Column(children: [
-      Padding(
-        padding: EdgeInsets.only(left: 16, right: 16, bottom: 10),
-        child: Text(c.desc, style: TextStyle(color: white, fontSize: 18))
-      ),
-      Padding(
-        padding: EdgeInsets.only(bottom: 10),
-        child: GestureDetector(
-          child: Image.asset("img/yt.png", height: 45),
-          onTap: () { launch("https://www.youtube.com/channel/${c.id}"); }
-        ),
-      )],
-    );
+		var icon = Container(
+			margin: EdgeInsets.symmetric(vertical: 12), height: 135, 
+			child: rounded(c.img)
+		);
+		var subTxt = Expanded(child: Counter(v: c.subs, sfx: " subscribers"));
+		var expanded = Column(
+			children: [
+				Container(
+					padding: EdgeInsets.symmetric(horizontal: 16),
+					child: Text(c.desc, style: TextStyle(fontSize: 18))
+				),
+				GestureDetector(
+					child: Container(
+						padding: EdgeInsets.only(top: 8),
+						child: Image.asset("img/yt.png", height: 45)
+					),
+					onTap: () { launch("https://www.youtube.com/channel/${c.id}"); }
+				)
+			],
+		);
 
 		return Container(
-      padding: EdgeInsets.only(bottom: 10, left: 10, right: 10),
-      child: Card(
-        color: c.color, shape: RoundedRectangleBorder(borderRadius: bR),
-        child: rounded(ExpansionTile(
-          title: Row(children: [icon, subTxt]),
-          children: [expanded],
-          trailing: Container(width: 0)
-        )),
-      )
-    );
+			padding: EdgeInsets.only(bottom: 20, left: 20, right: 20),
+			child: Card(
+				color: c.color, shape: RoundedRectangleBorder(borderRadius: bR),
+				child: Container(
+					padding: EdgeInsets.all(10),
+					child: rounded(ExpansionTile(
+						title: Row(children: [icon, subTxt]),
+						children: [expanded],
+						trailing: Container(width: 0)
+					)),
+				),
+			)
+		);
 	}
 
 	build(ctxt) {
-		var screenH=MediaQuery.of(ctxt).size.height, cardsH=181*2+15.0; // 181 is height of card and 15 is bottom padding
+		var screenH=MediaQuery.of(ctxt).size.height, cardsH=210*2+15.0; // 210 is height of card and 15 is bottom padding
 		var d=ts.subs-pdp.subs, internet= ts.subs>0 && pdp.subs>0, msg;
 		var bgColor= internet||loading ? Colors.blue[700] : Colors.red[700];
 		Widget icon=Container();
@@ -114,14 +128,14 @@ class PageSt extends State {
 		if (!internet) {
 			widgets=[];
 			cardsH=0;
-			icon=Icon(Icons.error, color: white, size: 30);
+			icon=Icon(Icons.error, size: 30);
 			msg="Can't access Internet";
 		}
 
 		if (loading) {
 			widgets=[];
 			cardsH=0;
-			icon=CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(white));
+			icon=CircularProgressIndicator();
 			msg="Loading";
 		}
 
