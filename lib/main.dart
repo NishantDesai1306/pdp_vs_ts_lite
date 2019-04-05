@@ -87,6 +87,7 @@ class PageSt extends State {
 		);
 		var subTxt = Expanded(child: Counter(v: c.subs, sfx: " subscribers"));
 		var expanded = Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
 			children: [
 				Container(
 					padding: EdgeInsets.symmetric(horizontal: 16),
@@ -94,7 +95,7 @@ class PageSt extends State {
 				),
 				GestureDetector(
 					child: Container(
-						padding: EdgeInsets.only(top: 8),
+						padding: EdgeInsets.all(8),
 						child: Image.asset("img/yt.png", height: 45)
 					),
 					onTap: () { launch("https://www.youtube.com/channel/${c.id}"); }
