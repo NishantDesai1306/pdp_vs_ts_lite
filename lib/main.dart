@@ -82,7 +82,7 @@ class PageSt extends State {
 		var rounded = (w) => ClipRRect(child: w, borderRadius: bR);
 
 		var icon = Container(
-			margin: EdgeInsets.symmetric(vertical: 12), height: 135, 
+			margin: EdgeInsets.only(top: 12, bottom: 12, right: 12), height: 135,
 			child: rounded(c.img)
 		);
 		var subTxt = Expanded(child: Counter(v: c.subs, sfx: " subscribers"));
