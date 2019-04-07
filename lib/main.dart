@@ -2,19 +2,26 @@ import "dart:async";
 import "dart:convert";
 import 'package:flutter/services.dart';
 import "package:flutter/material.dart";
-import "package:http/http.dart" as http;
+import "package:http/http.dart";
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 main() {
-	SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+	SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown
+  ]);
+
 	return runApp(App());
 }
 
 class App extends StatelessWidget {
 	build(c) => MaterialApp(
 		home: Page(), 
-		theme: ThemeData(accentColor: Colors.white, dividerColor: Colors.transparent, brightness: Brightness.dark)
+		theme: ThemeData(
+      accentColor: Colors.white,
+      dividerColor: Colors.transparent,
+      brightness: Brightness.dark
+    )
 	);
 }
 
@@ -22,14 +29,17 @@ class Page extends StatefulWidget {
 	createState() => PageSt();
 }
 
-messageText(txt) => Text(
-	txt,
-	style: TextStyle(
-		fontSize: 25,
-		fontWeight: FontWeight.bold
-	),
-	textAlign: TextAlign.center
-);
+class MessageText extends StatelessWidget {
+	final txt;
+	
+  MessageText(this.txt);
+	
+  build(c) => Text(
+    txt,
+    style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+    textAlign: TextAlign.center
+  );
+}
 
 class Channel {
 	var id, name, subs=-1, img, desc='', color;
@@ -37,16 +47,17 @@ class Channel {
 }
 
 class PageSt extends State {
-	var ts=Channel("UCq-Fj5jknLsUf-MWSy4_brA", "T-Series", Image.asset("img/ts.png"), Colors.red[900]),
-			pdp=Channel("UC-lHJZR3Gqxm24_Vd_AJ5Yw", "PewDiePie", Image.asset("img/pdp.png"), Colors.blue[900]);
-	var timer, loading=true;
-	var bR=BorderRadius.circular(15);
-	var UPDATE_RATE = 3;
+	var ts = Channel("UCq-Fj5jknLsUf-MWSy4_brA", "T-Series", Image.asset("img/ts.png"), Colors.red[900]),
+			pdp = Channel("UC-lHJZR3Gqxm24_Vd_AJ5Yw", "PewDiePie", Image.asset("img/pdp.png"), Colors.blue[900]),
+      timer,
+      loading = true,
+      bR = BorderRadius.circular(15),
+      UPDATE_FREQUENCY = 3;
 
 	PageSt() {
-		Timer.periodic(Duration(seconds: UPDATE_RATE), (t) async {
-			timer=t;
-			var newTSubs=await getSubs(ts.id), newPSubs=await getSubs(pdp.id);
+		Timer.periodic(Duration(seconds: UPDATE_FREQUENCY), (t) async {
+			timer = t;
+			var newTSubs = await getSubs(ts.id), newPSubs = await getSubs(pdp.id);
 
 			if (loading) {
 				ts.desc = await rootBundle.loadString('txt/ts.txt');
@@ -54,25 +65,25 @@ class PageSt extends State {
 			}
 
 			setState(() {
-				ts.subs=newTSubs;
-				pdp.subs=newPSubs;
-				loading=false;
+				ts.subs = newTSubs;
+				pdp.subs = newPSubs;
+				loading = false;
 			});
 		});
 	}
 
 	getSubs(id) async {
-		var res, url="https://www.googleapis.com/youtube/v3/channels?id=$id&part=statistics&key=AIzaSyDvd7sKFtV7evDIlkFmTCrWUIsCEWu1aJY";
+		var res, url = "https://www.googleapis.com/youtube/v3/channels?id=$id&part=statistics&key=AIzaSyDvd7sKFtV7evDIlkFmTCrWUIsCEWu1aJY";
 
 		try {
-			res=await http.get(url);
+			res = await get(url);
 		}
 		catch (e) { print(e); }
 
-		if (res!=null && res.statusCode==200) {
-			res=json.decode(res.body);
-			var data=res["items"][0];
-			return data!=null ? num.parse(data["statistics"]["subscriberCount"]) : -1;
+		if (res != null && res.statusCode == 200) {
+			res = json.decode(res.body);
+			var data = res["items"][0];
+			return data != null ? num.parse(data["statistics"]["subscriberCount"]) : -1;
 		}
 
 		return -1;
@@ -80,27 +91,15 @@ class PageSt extends State {
 
 	Widget channelUI(c) {
 		var rounded = (w) => ClipRRect(child: w, borderRadius: bR);
-
 		var icon = Container(
-			margin: EdgeInsets.only(top: 12, bottom: 12, right: 12), height: 135,
+			margin: EdgeInsets.only(top: 12, bottom: 12, right: 12),
+			height: 125,
 			child: rounded(c.img)
 		);
-		var subTxt = Expanded(child: Counter(v: c.subs, sfx: " subscribers"));
-		var expanded = Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-			children: [
-				Container(
-					padding: EdgeInsets.symmetric(horizontal: 16),
-					child: Text(c.desc, style: TextStyle(fontSize: 18))
-				),
-				GestureDetector(
-					child: Container(
-						padding: EdgeInsets.all(8),
-						child: Image.asset("img/yt.png", height: 45)
-					),
-					onTap: () { launch("https://www.youtube.com/channel/${c.id}"); }
-				)
-			],
+		var subTxt = Expanded(child: Counter(val: c.subs, suffix: " subscribers"));
+		var expanded = Container(
+			padding: EdgeInsets.only(left: 16, right: 16, bottom: 16),
+			child: Text(c.desc, style: TextStyle(fontSize: 18))
 		);
 
 		return Container(
@@ -120,24 +119,27 @@ class PageSt extends State {
 	}
 
 	build(ctxt) {
-		var screenH=MediaQuery.of(ctxt).size.height, cardsH=210*2+15.0; // 210 is height of card and 15 is bottom padding
-		var d=ts.subs-pdp.subs, internet= ts.subs>0 && pdp.subs>0, msg;
-		var bgColor= internet||loading ? Colors.blue[700] : Colors.red[700];
+		var screenH = MediaQuery.of(ctxt).size.height,
+      cardsH = 207*2.0, // 210 is height of card and 15 is bottom padding
+		  d = ts.subs-pdp.subs,
+      internet= ts.subs>0 && pdp.subs>0,
+      bgColor= internet || loading ? Colors.blue[700] : Colors.red[700],
+      widgets=(d > 0 ? [ts, pdp] : [pdp, ts]).map(channelUI).toList(),
+      msg;
 		Widget icon=Container();
-		List<Widget> widgets=(d>0 ? [ts, pdp] : [pdp, ts]).map(channelUI).toList();
 
 		if (!internet) {
-			widgets=[];
-			cardsH=0;
-			icon=Icon(Icons.error, size: 30);
-			msg="Can't access Internet";
+			widgets = [];
+			cardsH = 0;
+			icon = Icon(Icons.error, size: 30);
+			msg = "Can't access Internet";
 		}
 
 		if (loading) {
-			widgets=[];
-			cardsH=0;
-			icon=CircularProgressIndicator();
-			msg="Loading";
+			widgets = [];
+			cardsH = 0;
+			icon = CircularProgressIndicator();
+			msg = "Loading";
 		}
 
 		widgets.insert(0, Container(
@@ -145,48 +147,59 @@ class PageSt extends State {
 			alignment: Alignment.center,
 			child: Wrap(children: [
 				icon,
-				msg!=null ? messageText("  $msg") : Counter(v: d.abs(), pfx: (d>0 ? ts.name : pdp.name) + " is ahead by ", sfx: " subscribers")
+				msg != null ? MessageText("  $msg") : Counter(val: d.abs(), prefix: (d>0 ? ts.name : pdp.name) + " is ahead by ", suffix: " subscribers")
 			])
 		));
 
 		return Scaffold(
 			backgroundColor: bgColor,
-			body: SingleChildScrollView(child: Column(children: widgets))
+			body: SingleChildScrollView(
+        child: Column(children: widgets)
+      )
 		);
 	}
 }
 
 class Counter extends StatefulWidget {
-	var v, sfx, pfx;
-	Counter({this.v=0, this.pfx='', this.sfx=''});
-	CounterSt createState() => CounterSt(v);
+	var val, suffix, prefix;
+	Counter({this.val = 0, this.prefix = '', this.suffix = ''});
+	CounterSt createState() => CounterSt(val);
 }
 
 class CounterSt extends State<Counter> {
-	var cnt, fv, tmr, nf=NumberFormat.simpleCurrency(decimalDigits: 0, name: 'JPY', locale: 'en_US');
+	var cnt, fv, tmr, nf = NumberFormat.simpleCurrency(decimalDigits: 0, name: 'USD');
 
-	CounterSt(v) {fv=cnt=v;}
+	CounterSt(v) {
+		fv = cnt = v;
+	}
 
 	didUpdateWidget(ow) {
 		if (tmr!=null) {
 			tmr.cancel();
-			setState(() {cnt=fv;});
+			setState(() {
+				cnt = fv;
+			});
 		}
-		fv = ow!=null ? ow.v : widget.v;
-		tmr = Timer.periodic(Duration(milliseconds: 100), updateCnt);
+
+		fv = ow!=null ? ow.val : widget.val;
+		tmr=Timer.periodic(Duration(milliseconds: 100), updateCnt);
 		super.didUpdateWidget(ow);
 	}
 
 	updateCnt(timer) {
-		var nv=0, d=fv-cnt;
-		if (d==0) {
+		var nv = 0, d = fv - cnt;
+
+		if (d == 0) {
 			return timer.cancel();
 		}
 		else {
-			nv=d<0 ? cnt-1 : cnt+1;
+			nv= d < 0 ? cnt - 1 : cnt + 1;
 		}
-		setState(() {cnt=nv;});
+
+		setState(() {
+			cnt = nv;
+		});
 	}
 
-	build(c) => messageText((widget.pfx ?? '') + nf.format(cnt).substring(1) + (widget.sfx ?? ''));
+	build(c) => MessageText((widget.prefix ?? '') + nf.format(cnt).substring(1) + (widget.suffix ?? ''));
 }
